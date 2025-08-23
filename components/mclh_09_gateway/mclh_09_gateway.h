@@ -79,7 +79,6 @@ public:
       batt_sensor[i]->set_unit_of_measurement("%");
       batt_sensor[i]->set_accuracy_decimals(0);
       batt_sensor[i]->set_force_update(false);
-      App.register_sensor(batt_sensor[i]);
 
       // датчик температуры
       temp_sensor[i] = new sensor::Sensor();
@@ -94,7 +93,6 @@ public:
       temp_sensor[i]->set_accuracy_decimals(1);
       temp_sensor[i]->set_force_update(false);
       // temp_sensor[i]->set_filters({new sensor::CalibrateLinearFilter(0.09907442858106243f, -37.09368850461943f)});
-      App.register_sensor(temp_sensor[i]);
 
       // датчик освещения
       lumi_sensor[i] = new sensor::Sensor();
@@ -110,7 +108,6 @@ public:
       lumi_sensor[i]->set_force_update(false);
       // lumi_sensor[i]->set_filters({new sensor::CalibrateLinearFilter(96.48563036227942f, -13913.813751854166f),
       //                              new sensor::LambdaFilter([=](float x) -> optional<float> { return limit_value(x, 0, x); })});
-      App.register_sensor(lumi_sensor[i]);
 
       // датчик влажности почвы
       soil_sensor[i] = new sensor::Sensor();
@@ -128,7 +125,6 @@ public:
       soil_sensor[i]->set_force_update(false);
       // soil_sensor[i]->set_filters({new sensor::CalibrateLinearFilter(0.17831784356979544f, -165.0581022116415f),
       //                              new sensor::LambdaFilter([=](float x) -> optional<float> { return limit_value(x, 0, 60); })});
-      App.register_sensor(soil_sensor[i]);
 
       // датчик влажности
       humi_sensor[i] = new sensor::Sensor();
@@ -143,7 +139,6 @@ public:
       humi_sensor[i]->set_accuracy_decimals(0);
       humi_sensor[i]->set_force_update(false);
       // humi_sensor[i]->set_filters({new sensor::LambdaFilter([=](float x) -> optional<float> { return x / 13.0; })});
-      App.register_sensor(humi_sensor[i]);
 
       // датчик уровня сигнала
       rssi_sensor[i] = new sensor::Sensor();
@@ -159,7 +154,6 @@ public:
       rssi_sensor[i]->set_unit_of_measurement("dBm");
       rssi_sensor[i]->set_accuracy_decimals(0);
       rssi_sensor[i]->set_force_update(false);
-      App.register_sensor(rssi_sensor[i]);
 
       // датчик количества ошибок
       if (error_counting) {
@@ -174,7 +168,6 @@ public:
         error_sensor[i]->set_state_class(sensor::STATE_CLASS_MEASUREMENT);
         error_sensor[i]->set_accuracy_decimals(0);
         error_sensor[i]->set_force_update(false);
-        App.register_sensor(error_sensor[i]);
       }
 
       // alert select
@@ -185,7 +178,6 @@ public:
       snprintf(buffer, sizeof(buffer), SENSOR_ID, i + 1, "alert_select");
       alert_select[i]->set_object_id(strdup(buffer));
       App.register_component(alert_select[i]);
-      App.register_select(alert_select[i]);
 
       // ble-клиент
       ble_client[i] = new myhomeiot_ble_client2::MyHomeIOT_BLEClient2();
@@ -310,7 +302,21 @@ public:
     for (size_t i = 0; i < device_count; i++)
       ble_client[i]->set_update_interval(update_interval);
   }
-
+        
+  void setup() override {
+    for (size_t i = 0; i < batt_sensor.size(); i++) {
+      // Set parent to enable auto-registration
+      if (batt_sensor[i]) batt_sensor[i]->set_parent(this);
+      if (temp_sensor[i]) temp_sensor[i]->set_parent(this);
+      if (lumi_sensor[i]) lumi_sensor[i]->set_parent(this);
+      if (soil_sensor[i]) soil_sensor[i]->set_parent(this);
+      if (humi_sensor[i]) humi_sensor[i]->set_parent(this);
+      if (rssi_sensor[i]) rssi_sensor[i]->set_parent(this);
+      if (error_sensor[i]) error_sensor[i]->set_parent(this);
+      if (alert_select[i]) alert_select[i]->set_parent(this);
+    }
+  }
+        
 protected:
   std::string to_string(uint64_t address) const {
     char buffer[20];
