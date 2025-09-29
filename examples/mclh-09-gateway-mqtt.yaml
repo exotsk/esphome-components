@@ -18,7 +18,8 @@ wifi:
   password: !secret wifi_password
   fast_connect: true
 ota:
-  password: !secret ota_password_ble
+  - platform: esphome
+    password: !secret ota_password
 
 mqtt:
   broker: !secret mqtt_host
@@ -73,9 +74,22 @@ number:
         - lambda: |-
             id(mclh_09_gateway).set_update_interval(60000 * (uint32_t)x);
 
+# Fake sensor to prevent error "has no member named 'register_sensor'"
 sensor:
-  - platform: uptime
-    name: "Uptime"
+  - platform: template
+    name: "Template Sensor"
+    internal: true
+
+# Fake select to prevent error "has no member named 'register_select'"
+select:
+  - platform: template
+    name: "Template select"
+    optimistic: true
+    internal: true
+    options:
+      - one
+      - two
+    initial_option: two
 
 external_components:
   - source: github://myhomeiot/esphome-components
